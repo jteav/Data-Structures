@@ -11,42 +11,35 @@ class Node {
 private:
     FUNCTIONS op;
     double num;
+    double sum = 0.0;
     Node* prev;
     Node* next;
+
     friend class LinkedList;
     friend class CalcList;
 };
 
-//Class for the doubly linked list
-class LinkedList{
-public:
-    LinkedList();
-    ~LinkedList();
-    bool empty() const;
-    void addBack(const FUNCTIONS& fun, const double& no);
-    void removeFront();
-    void removeBack();
-private:
-    Node* header;
-    Node* trailer;
-protected:
-    void add(Node* v, const FUNCTIONS& fun, const double& no);
-    void remove(Node* v);
-    friend class CalcList;
-};
-
-//Class for the calculator
-//It stores its operations as a linked list
-//The count variable is to keep track of the size of the linked list
+/*Class for the calculator
+It stores its operations as a linked list
+The count variable is to keep track of the size of the linked list*/
 class CalcList:public CalcListInterface{
 public:
+    CalcList();
+    ~CalcList();
+
     double total() const;
     void newOperation(const FUNCTIONS func, const double operand);
     void removeLastOperation();
     std::string toString(unsigned short precision) const;
+
+    int count = 0; //Keeps track of the number of operations
+protected:
+    void add(Node* v, const FUNCTIONS& fun, const double& no);
+    void remove(Node* v);
+    bool empty() const;
 private:
-    LinkedList list;
-    int count = 0;
+    Node* header;
+    Node* trailer;
 };
 
 #endif

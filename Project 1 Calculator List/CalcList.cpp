@@ -8,7 +8,7 @@
 using namespace std;
 
 //The constructor for the linked list
-LinkedList::LinkedList(){
+CalcList::CalcList(){
 header = new Node;
 trailer = new Node;
 header->next = trailer;
@@ -16,235 +16,123 @@ trailer->prev = header;
 }
 
 //The destructor for the linked list
-LinkedList::~LinkedList(){
-    while (!empty()) removeFront();
+CalcList::~CalcList(){
+    while (!empty()) remove(header->next);
     delete header;
     delete trailer;
 }
 
 //Checks to see if the list is empty
-bool LinkedList::empty() const{
+bool CalcList::empty() const{
     return (header->next == trailer);
 }
 
 //Inserts the operation and number before node v
-void LinkedList::add(Node* v, const FUNCTIONS& fun, const double& no){
+void CalcList::add(Node* v, const FUNCTIONS& fun, const double& no){
+    count++;
+
     Node* u = new Node;
     u->op = fun;
     u->num = no;
     u->next = v;
     u->prev = v->prev;
-    v->prev->next = v->prev = u;
-}
-
-//Adds element e to the back of the list
-void LinkedList::addBack(const FUNCTIONS& fun, const double& no){
-    add(trailer, fun, no);
+    v->prev->next = u;
+    v->prev = u;
+    u->sum = u->prev->sum;
 }
 
 //Removes the node v
-void LinkedList::remove(Node* v){
-    Node* u = v->prev;
-    Node* w = v->next;
-    u->next = w;
-    w->prev = u;
-    delete v;
-}
-
-//Removes an element from the front of the list
-void LinkedList::removeFront(){
-    remove(header->next);
-}
-
-//Removes an element from the back of the list
-void LinkedList::removeBack(){
-    remove(trailer->prev);
-}
-
-//Returns the current total in the linked list
-//The while loop iterates through the linked list
-//The if statements determine what operation to perform.
-double CalcList::total() const{
-    if(list.empty()){
-        return 0;
+void CalcList::remove(Node* v){
+    if(empty()){
+        throw("List is already empty!");
     }
     else{
-    Node* cur = list.header->next;
-    double sum = 0;
+        count--;
 
-    while(cur->next != NULL)
-    {
-        if(cur->op == ADDITION){
-            sum += cur->num;
-        }
-        else if(cur->op == SUBTRACTION){
-            sum -= cur->num;
-        }
-        else if(cur->op == MULTIPLICATION){
-            sum *= cur->num;
-        }
-        else if(cur->op == DIVISION){
-            sum /= cur->num;
-        }
-
-        cur = cur->next;
+        Node* u = v->prev;
+        Node* w = v->next;
+        u->next = w;
+        w->prev = u;
+        delete v;
     }
-
-    return sum;
-}
 }
 
-//Adds a new operation to the calculator
-//First argument is the operation to be used
-//Second argument is the number to be used
-//It also increments count to keep track of the size of the linked list
+//Returns the current total in the linked list.
+double CalcList::total() const{
+    return trailer->prev->sum;
+}
+
+/*Adds a new operation to the calculator.
+First argument is the operation to be used.
+Second argument is the number to be used.*/
 void CalcList::newOperation(const FUNCTIONS func, const double operand){
-    list.addBack(func, operand);
-    count++;
+    add(trailer, func, operand);
+
+    switch(func){
+        case ADDITION:
+            trailer->prev->sum += operand;
+            break;
+        case SUBTRACTION:
+            trailer->prev->sum -= operand;
+            break;
+        case MULTIPLICATION:
+            trailer->prev->sum *= operand;
+            break;
+        case DIVISION:
+            if(operand == 0){
+                removeLastOperation();
+                throw("Divide by zero error.");
+            }
+            else{
+                trailer->prev->sum /= operand;
+                break;
+            }
+        default:
+            throw("Arithmetic operation error. Addition, Subtraction, Multiplication, and Division only.");
+            break;
+    }
 }
 
 //Removes the last operation from the calculator
-//It also decrements count to keep track of the size of the linked list
 void CalcList::removeLastOperation(){ 
-        list.removeBack();
-        count--;
+        remove(trailer->prev);
 }
 
-//Returns the list of operations in the calculator in string format
-//The argument specifies the decimal precision
-//The while loop interates through the linked list
-//It iterates backwards starting from the end
-//The if statements determine what the operation is and how to format it
+/*Returns the list of operations in the calculator in string format
+The argument specifies the decimal precision
+The while loop interates through the linked list
+It iterates backwards starting from the end
+The if statements determine what the operation is and how to format it*/
 std::string CalcList::toString(unsigned short precision) const{
-    Node* cur = list.trailer->prev;
-    double sum = total();
-    string str;         //string to store everything
-    int i = count;      //variable to countdown
+    Node* cur = trailer->prev;
+    stringstream ss;        //variable to store data stream
+    string str = "";        //string to return
+    int step = count;       //variable to countdown
+
+    ss.precision(precision);//sets the precision to floats
     
     while(cur->prev != NULL)
     {
+        ss << step << ": ";
+        ss << cur->prev->sum;
+
         if(cur->op == ADDITION){
-            //This section inserts the decrement countdown variable into the string
-            ostringstream ct;
-            ct << i;
-            str += ct.str();
-            str += ": ";
-            i--;
-
-            //This section sets up the value on the left of the operation
-            //and inserts it into the string
-            sum -= cur->num;
-            ostringstream first;
-            first << fixed << setprecision(precision) << sum;
-            str += first.str();
-
-            //This inserts the operation into the string
-            str += "+";
-
-            //This section sets up the value on the right of the operation
-            ostringstream no;
-            no << fixed << setprecision(precision) << cur->num;
-            str += no.str();
-
-            //This inserts the equal sign into the string
-            str += "=";
-
-            //This sets up the total on the right of the equal sign
-            //and inserts it into the string
-            ostringstream tot;
-            tot << fixed << setprecision(precision) << sum+cur->num;
-            str += tot.str();
-            
-            str += "\n";
+            ss << "+";
         }
-        //The rest of the if statements follow the same format as the first
         else if(cur->op == SUBTRACTION){
-            ostringstream ct;
-            ct << i;
-            str += ct.str();
-            str += ": ";
-            i--;
-
-            sum += cur->num;
-            ostringstream first;
-            first << fixed << setprecision(precision) << sum;
-            str += first.str();
-
-            str += "-";
-
-            ostringstream no;
-            no << fixed << setprecision(precision) << cur->num;
-            str += no.str();
-
-            str += "=";
-
-            ostringstream tot;
-            tot << fixed << setprecision(precision) << sum-cur->num;
-            str += tot.str();
-
-            str += "\n";
+            ss << "-";
         }
         else if(cur->op == MULTIPLICATION){
-            ostringstream ct;
-            ct << i;
-            str += ct.str();
-            str += ": ";
-            i--;
-
-            sum /= cur->num;
-            ostringstream first;
-            first << fixed << setprecision(precision) << sum;
-            str += first.str();
-
-            str += "*";
-
-            ostringstream no;
-            no << fixed << setprecision(precision) << cur->num;
-            str += no.str();
-
-            str += "=";
-
-            ostringstream tot;
-            tot << fixed << setprecision(precision) << sum*cur->num;
-            str += tot.str();
-
-            str += "\n";
+            ss << "*";
         }
         else if(cur->op == DIVISION){
-            ostringstream ct;
-            ct << i;
-            str += ct.str();
-            str += ": ";
-            i--;
-
-            sum *= cur->num;
-            ostringstream first;
-            first << fixed << setprecision(precision) << sum;
-            str += first.str();
-
-            str += "/";
-
-            ostringstream no;
-            no << fixed << setprecision(precision) << cur->num;
-            str += no.str();
-
-            str += "=";
-
-            ostringstream tot;
-            tot << fixed << setprecision(precision) << sum/cur->num;
-            str += tot.str();
-
-            str += "\n";
+            ss << "/";
         }
+        ss << cur->num << "=" << cur->sum << endl;
 
         cur = cur->prev;
+        step--;
     }
+    str = ss.str();
     return str;
 }
-
-/*int main()
-{
-    CalcList calc;
-    cout << "The total is: " << calc.total() << endl;
-    return 0;
-}*/
