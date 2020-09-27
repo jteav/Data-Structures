@@ -1,7 +1,8 @@
 //Johnathan Teav
 #ifndef CALCLIST_H
 #define CALCLIST_H
-#include <string>
+#include <iostream>
+#include <sstream>
 #include "CalcListInterface.hpp"
 using namespace std;
 
@@ -30,7 +31,7 @@ public:
     double total() const;
     void newOperation(const FUNCTIONS func, const double operand);
     void removeLastOperation();
-    std::string toString(unsigned short precision) const;
+    string toString(unsigned short precision) const;
 
     int count = 0; //Keeps track of the number of operations
 protected:

@@ -1,8 +1,4 @@
 //Johnathan Teav
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <iomanip>
 #include "CalcList.hpp"
 
 using namespace std;
@@ -103,17 +99,17 @@ The argument specifies the decimal precision
 The while loop interates through the linked list
 It iterates backwards starting from the end
 The if statements determine what the operation is and how to format it*/
-std::string CalcList::toString(unsigned short precision) const{
+string CalcList::toString(unsigned short precision) const{
     Node* cur = trailer->prev;
     stringstream ss;        //variable to store data stream
     string str = "";        //string to return
     int step = count;       //variable to countdown
 
-    ss.precision(precision);//sets the precision to floats
+    ss.precision(precision);
     
-    while(cur->prev != NULL)
+    while(cur != header)
     {
-        ss << step << ": ";
+        ss << fixed << step << ": ";
         ss << cur->prev->sum;
 
         if(cur->op == ADDITION){
