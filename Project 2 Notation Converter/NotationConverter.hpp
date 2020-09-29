@@ -3,7 +3,8 @@
 #define NOTATIONCONVERTER_H
 #include "NotationConverterInterface.hpp"
 #include "Deque.hpp"
-#include <string>
+#include<iostream>
+#include<exception>
 using namespace std;
 
 //Class for the notation converter

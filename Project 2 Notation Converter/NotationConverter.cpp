@@ -1,7 +1,4 @@
 //Johnathan Teav
-#include<iostream>
-#include<string>
-#include<exception>
 #include "NotationConverter.hpp"
 using namespace std;
 
@@ -20,6 +17,11 @@ string NotationConverter::postfixToInfix(string inStr){
             else
                 temp.insertBack(inStr[i]);
         }
+    }
+
+    //Checks if postfix is correct
+    if(temp2.size() != temp.size()-1){
+        throw inStr;
     }
     
     N.insertBack('(');
