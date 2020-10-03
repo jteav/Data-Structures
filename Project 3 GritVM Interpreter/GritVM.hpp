@@ -2,11 +2,11 @@
 #ifndef GRITVM_H
 #define GRITVM_H
 #include "GritVMBase.hpp"
-#include <string>
-#include <vector>
 #include <list>
 #include <fstream>
 #include <iterator>
+#include <iostream>
+#include <exception>
 using namespace std;
 using namespace GVMHelper;
 
@@ -18,9 +18,10 @@ public:
     STATUS run();
     vector<long> getDataMem();
     STATUS reset();
-    void printVM(bool printData, bool printInstruction);
-    void evaluate(Instruction instruct);
+    void printVM(bool printData, bool printInstruction);  
 private:
+    long evaluate(Instruction instruct);
+    void advanceInstruct(long jump);
     vector<long> dataMem;
     list<Instruction> instructMem;
     list<Instruction>::iterator currentInstruct;

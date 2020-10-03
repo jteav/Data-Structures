@@ -1,12 +1,5 @@
 //Johnathan Teav
 #include "GritVM.hpp"
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <vector>
-#include <list>
-#include <exception>
-#include <iterator>
 using namespace std;
 using namespace GVMHelper;
 
@@ -15,8 +8,8 @@ using namespace GVMHelper;
 GritVM::GritVM(){
     machineStatus = WAITING;
     accumulator = 0;
-    currentInstruct = instructMem.begin();
 }
+
 //The load function takes in the filename and a vector for the initial memory.
 //It returns the STATUS of the GritVM program.
 STATUS GritVM::load(const string filename, const vector<long> &initialMemory){
@@ -34,42 +27,54 @@ STATUS GritVM::load(const string filename, const vector<long> &initialMemory){
 
         //parses the instructions and pushes them into instructMem
         while(getline(file, line)){
-            if(isalpha(line[0]))
+            if(isalpha(line[0])){
                 instructMem.push_back(parseInstruction(line));
+            }
         }
-    
-        if(instructMem.size() != 0)
+
+        currentInstruct = instructMem.begin();
+
+        if(instructMem.size() != 0){
             machineStatus = READY;
+        }
         
         return machineStatus;
 }
+
 //The run function runs the program.
 //It returns the STATUS of the GritVM program.
 STATUS GritVM::run(){
     //Sets the status to RUNNING
-    if(machineStatus == READY)
+    if(machineStatus == READY){
         machineStatus = RUNNING;
-    
-    //Calls the evaluate function to interpret the instructions
-    //The loop ends when the machineStatus changes or when it runs out of instructions
-    while(machineStatus == RUNNING && currentInstruct != instructMem.end()){
-        evaluate(*currentInstruct);
     }
 
-    if(currentInstruct == instructMem.end())
-        machineStatus = HALTED;
+    /*Calls the evaluate function to interpret the instructions
+    Also calls the advanceInstruct function to advance the instructions
+    The loop ends when the machineStatus changes or when it runs out of instructions*/
+    while(machineStatus == RUNNING && currentInstruct != instructMem.end()){
+        long jumpDistance = evaluate(*currentInstruct);
+        advanceInstruct(jumpDistance);
+    }
 
-    if(instructMem.empty())
+    if(currentInstruct == instructMem.end()){
+        machineStatus = HALTED;
+    }
+
+    if(instructMem.empty()){
         machineStatus = WAITING;
+    }
 
     file.close();
 
     return machineStatus;
 }
+
 //Returns the data memory vector
 vector<long> GritVM::getDataMem(){
     return dataMem;
 }
+
 //Resets the GritVM program
 STATUS GritVM::reset(){
     dataMem.clear();
@@ -80,101 +85,137 @@ STATUS GritVM::reset(){
 
     return machineStatus;
 }
-//The evaluate function uses switch statements to execute the instructions
-void GritVM::evaluate(Instruction instruct){
-    vector<long>::iterator it;
 
+//The evaluate function uses switch statements to execute the instructions
+long GritVM::evaluate(Instruction instruct){
+    long jump;
     switch(instruct.operation){
         case CLEAR:{
             accumulator = 0;
-            currentInstruct++;
+            jump = 1;
+            break;
         }
         case AT:{
             accumulator = dataMem.at(instruct.argument);
-            currentInstruct++;
+            jump = 1;
+            break;
         }
         case SET:{
             dataMem.at(instruct.argument) = accumulator;
-            currentInstruct++;
+            jump = 1;
+            break;
         }
         case INSERT:{
             dataMem.insert(dataMem.begin() + instruct.argument, accumulator);
-            currentInstruct++;
+            jump = 1;
+            break;
         }
         case ERASE:{
             dataMem.erase(dataMem.begin() + instruct.argument);
-            currentInstruct++;
+            jump = 1;
+            break;
         }
         case ADDCONST:{
             accumulator += instruct.argument;
-            currentInstruct++;
+            jump = 1;
+            break;
         }
         case SUBCONST:{
             accumulator -= instruct.argument;
-            currentInstruct++;
+            jump = 1;
+            break;
         }
         case MULCONST:{
             accumulator *= instruct.argument;
-            currentInstruct++;
+            jump = 1;
+            break;
         }
         case DIVCONST:{
             accumulator /= instruct.argument;
-            currentInstruct++;
+            jump = 1;
+            break;
         }
         case ADDMEM:{
             accumulator += dataMem.at(instruct.argument);
-            currentInstruct++;
+            jump = 1;
+            break;
         }
         case SUBMEM:{
             accumulator -= dataMem.at(instruct.argument);
-            currentInstruct++;
+            jump = 1;
+            break;
         }
         case MULMEM:{
             accumulator *= dataMem.at(instruct.argument);
-            currentInstruct++;
+            jump = 1;
+            break;
         }
         case DIVMEM:{
             accumulator /= dataMem.at(instruct.argument);
-            currentInstruct++;
+            jump = 1;
+            break;
         }
         case JUMPREL:{
-            std::advance(currentInstruct, instruct.argument);
+            jump =  instruct.argument;
+            break;
         }
         case JUMPZERO:{
-            if(accumulator == 0)
-                std::advance(currentInstruct, instruct.argument);
-            else
-                currentInstruct++;
+            if(accumulator == 0){
+                jump = instruct.argument;
+                break;
+            }
+            else{
+                jump = 1;
+                break;
+            }
         }
         case JUMPNZERO:{
-            if(accumulator != 0)
-                std::advance(currentInstruct, instruct.argument);
-            else
-                currentInstruct++;
+            if(accumulator != 0){
+                jump = instruct.argument;
+                break;
+            }
+            else{
+                jump = 1;
+                break;
+            }
         }
         case NOOP:{
-            currentInstruct++;
+            jump = 1;
+            break;
         }
         case HALT:{
             machineStatus = HALTED;
+            break;
         }
         case OUTPUT:{
             cout << accumulator << endl;
-            currentInstruct++;
+            jump = 1;
+            break;
         }
         case CHECKMEM:{
             //I converted dataMem.size() to an unsigned int to avoid a warning
             unsigned int size = dataMem.size();
-            if(size < instruct.argument)
+            if(size >= instruct.argument){
+                jump = 1;
+            }
+            else{
                 machineStatus = ERRORED;
-            currentInstruct++;
+            }
+            break;
         }
         default:{
-            currentInstruct++;
+            jump = 1;
         }
     }
+    return jump;
 }
-//Just a print function to test some functionality
+
+//Advances the instruction by the proper amount.
+void GritVM::advanceInstruct(long jump){
+    advance(currentInstruct, jump);
+}
+
+//A print function to test some functionality.
 void GritVM::printVM(bool printData, bool printInstruction){
     cout << "****** Output Dump ******" << endl;
     cout << "Status: " << statusToString(machineStatus) << endl;
@@ -201,3 +242,16 @@ void GritVM::printVM(bool printData, bool printInstruction){
         }
     }
 }
+/*
+int main(){
+    GritVM vm;
+    vector<long> mem = {42};
+    vm.load("test.gvm", mem);
+    vm.run();
+    vector<long> data = vm.getDataMem();
+    cout << data[0] << endl;
+    cout << data[1] << endl;
+    cout << data[2] << endl;
+    
+    return 0;
+}*/

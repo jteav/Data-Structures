@@ -4,7 +4,6 @@
 #include "NotationConverterInterface.hpp"
 #include "Deque.hpp"
 #include<iostream>
-#include<exception>
 using namespace std;
 
 //Class for the notation converter
