@@ -193,9 +193,7 @@ long GritVM::evaluate(Instruction instruct){
             break;
         }
         case CHECKMEM:{
-            //I converted dataMem.size() to an unsigned int to avoid a warning
-            unsigned int size = dataMem.size();
-            if(size >= instruct.argument){
+            if(dataMem.size() >= instruct.argument){
                 jump = 1;
             }
             else{
@@ -242,16 +240,3 @@ void GritVM::printVM(bool printData, bool printInstruction){
         }
     }
 }
-/*
-int main(){
-    GritVM vm;
-    vector<long> mem = {42};
-    vm.load("test.gvm", mem);
-    vm.run();
-    vector<long> data = vm.getDataMem();
-    cout << data[0] << endl;
-    cout << data[1] << endl;
-    cout << data[2] << endl;
-    
-    return 0;
-}*/

@@ -1,0 +1,47 @@
+# Written by Johnathan Teav
+# This program calculates the minimum number of moves for a Towers of Hanoi solution
+# The formula to calculate is 2^n - 1
+# Memory layout:
+#   0: n        (Provided by initialMemory)
+#   1: Result   (Output of program)
+#   2: j        (used for iteration)
+
+# Check the memory has at least one space (for N), clear the accumulator
+CHECKMEM 1
+CLEAR
+
+# Set up the Result
+ADDCONST 1
+INSERT 1
+
+# Check to see if N is zero and halt if it is
+AT 0
+JUMPNZERO 2
+HALT
+
+# Set j = 1
+CLEAR
+ADDCONST 1
+INSERT 2
+
+# Grab N and check if j is greater than N (one greater than)
+AT 0
+ADDCONST 1
+SUBMEM 2
+JUMPNZERO 6
+AT 1
+SUBCONST 1
+SET 1
+ERASE 2
+HALT
+
+# Calculate the powers of 2
+AT 1
+MULCONST 2
+SET 1
+
+# Jump Back after incrementing j
+AT 2
+ADDCONST 1
+SET 2
+JUMPREL -15
