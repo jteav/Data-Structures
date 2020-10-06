@@ -1,3 +1,4 @@
+//This file was provided by the instructor
 #include "HuffmanBase.hpp"
 
 char HuffmanNode::getCharacter() const

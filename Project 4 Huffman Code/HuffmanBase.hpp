@@ -1,3 +1,4 @@
+//This file was provided by the instructor
 #ifndef HUFFMANBASE_H
 #define HUFFMANBASE_H
 

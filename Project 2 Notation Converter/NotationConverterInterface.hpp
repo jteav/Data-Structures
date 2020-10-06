@@ -1,3 +1,4 @@
+//This file was provided by the instructor
 #ifndef NOTATIONCONVERTERINTERFACE_H
 #define NOTATIONCONVERTERINTERFACE_H
 
