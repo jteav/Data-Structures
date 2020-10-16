@@ -33,3 +33,6 @@
 
 # Visual Studio Code
 *.vscode
+
+#JavaScript
+node_modules/
