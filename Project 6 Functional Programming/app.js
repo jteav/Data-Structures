@@ -1,4 +1,5 @@
-const R = require('ramda');
+//Code was provided by instructor and completed by Johnathan Teav
+const R = require('ramda'); //npm install ramda
 
 /* ********************************************************************************************** */
 /* ****************************          Predicate  Methods           *************************** */
